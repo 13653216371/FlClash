@@ -60,14 +60,8 @@ func Start(tunProps Props) (io.Closer, error) {
 	}
 
 	tunOptions, _ := json.Marshal(options)
-	log.Infoln(string(tunOptions))
 
-	listener, err := sing_tun.New(options, tunnel.Tunnel)
+	log.Infoln("startTUN tunOptions: %s", tunOptions)
 
-	if err != nil {
-		log.Errorln("startTUN error:", err)
-		return nil, err
-	}
-
-	return listener, nil
+	return sing_tun.New(options, tunnel.Tunnel)
 }
