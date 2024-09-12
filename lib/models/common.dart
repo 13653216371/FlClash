@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
@@ -6,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'generated/common.freezed.dart';
-part 'generated/common.g.dart';
 
+part 'generated/common.g.dart';
 
 @freezed
 class NavigationItem with _$NavigationItem {
@@ -113,7 +114,7 @@ extension LogsAndKeywordsExt on LogsAndKeywords {
   List<Log> get filteredLogs => logs
       .where(
         (log) => {log.logLevel.name}.containsAll(keywords),
-  )
+      )
       .toList();
 }
 
@@ -131,9 +132,9 @@ class ConnectionsAndKeywords with _$ConnectionsAndKeywords {
 extension ConnectionsAndKeywordsExt on ConnectionsAndKeywords {
   List<Connection> get filteredConnections => connections
       .where((connection) => {
-    ...connection.chains,
-    connection.metadata.process,
-  }.containsAll(keywords))
+            ...connection.chains,
+            connection.metadata.process,
+          }.containsAll(keywords))
       .toList();
 }
 
@@ -159,8 +160,9 @@ class FileInfo with _$FileInfo {
   }) = _FileInfo;
 }
 
-extension FileInfoExt on FileInfo{
-  String get desc => "${TrafficValue(value: size).show}  ·  ${lastModified.lastUpdateTimeDesc}";
+extension FileInfoExt on FileInfo {
+  String get desc =>
+      "${TrafficValue(value: size).show}  ·  ${lastModified.lastUpdateTimeDesc}";
 }
 
 @freezed
@@ -201,11 +203,11 @@ class Traffic {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is Traffic &&
-              runtimeType == other.runtimeType &&
-              id == other.id &&
-              up == other.up &&
-              down == other.down;
+      other is Traffic &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          up == other.up &&
+          down == other.down;
 
   @override
   int get hashCode => id.hashCode ^ up.hashCode ^ down.hashCode;
@@ -273,9 +275,9 @@ class TrafficValue {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is TrafficValue &&
-              runtimeType == other.runtimeType &&
-              _value == other._value;
+      other is TrafficValue &&
+          runtimeType == other.runtimeType &&
+          _value == other._value;
 
   @override
   int get hashCode => _value.hashCode;
@@ -333,13 +335,13 @@ class SystemColorSchemes {
     if (brightness == Brightness.dark) {
       return darkColorScheme != null
           ? ColorScheme.fromSeed(
-        seedColor: darkColorScheme!.primary,
-        brightness: Brightness.dark,
-      )
+              seedColor: darkColorScheme!.primary,
+              brightness: Brightness.dark,
+            )
           : ColorScheme.fromSeed(
-        seedColor: defaultPrimaryColor,
-        brightness: Brightness.dark,
-      );
+              seedColor: defaultPrimaryColor,
+              brightness: Brightness.dark,
+            );
     }
     return lightColorScheme != null
         ? ColorScheme.fromSeed(seedColor: darkColorScheme!.primary)
@@ -359,13 +361,13 @@ class IpInfo {
   static IpInfo fromIpInfoIoJson(Map<String, dynamic> json) {
     return switch (json) {
       {
-      "ip": final String ip,
-      "country": final String country,
+        "ip": final String ip,
+        "country": final String country,
       } =>
-          IpInfo(
-            ip: ip,
-            countryCode: country,
-          ),
+        IpInfo(
+          ip: ip,
+          countryCode: country,
+        ),
       _ => throw const FormatException("invalid json"),
     };
   }
@@ -373,13 +375,13 @@ class IpInfo {
   static IpInfo fromIpApiCoJson(Map<String, dynamic> json) {
     return switch (json) {
       {
-      "ip": final String ip,
-      "country_code": final String countryCode,
+        "ip": final String ip,
+        "country_code": final String countryCode,
       } =>
-          IpInfo(
-            ip: ip,
-            countryCode: countryCode,
-          ),
+        IpInfo(
+          ip: ip,
+          countryCode: countryCode,
+        ),
       _ => throw const FormatException("invalid json"),
     };
   }
@@ -387,13 +389,13 @@ class IpInfo {
   static IpInfo fromIpSbJson(Map<String, dynamic> json) {
     return switch (json) {
       {
-      "ip": final String ip,
-      "country_code": final String countryCode,
+        "ip": final String ip,
+        "country_code": final String countryCode,
       } =>
-          IpInfo(
-            ip: ip,
-            countryCode: countryCode,
-          ),
+        IpInfo(
+          ip: ip,
+          countryCode: countryCode,
+        ),
       _ => throw const FormatException("invalid json"),
     };
   }
@@ -401,13 +403,13 @@ class IpInfo {
   static IpInfo fromIpwhoIsJson(Map<String, dynamic> json) {
     return switch (json) {
       {
-      "ip": final String ip,
-      "country_code": final String countryCode,
+        "ip": final String ip,
+        "country_code": final String countryCode,
       } =>
-          IpInfo(
-            ip: ip,
-            countryCode: countryCode,
-          ),
+        IpInfo(
+          ip: ip,
+          countryCode: countryCode,
+        ),
       _ => throw const FormatException("invalid json"),
     };
   }
@@ -416,4 +418,16 @@ class IpInfo {
   String toString() {
     return 'IpInfo{ip: $ip, countryCode: $countryCode}';
   }
+}
+
+@freezed
+class HotKeyAction with _$HotKeyAction {
+  const factory HotKeyAction({
+    required HotAction action,
+    int? key,
+    @Default({}) Set<KeyboardModifier> modifiers,
+  }) = _HotKeyAction;
+
+  factory HotKeyAction.fromJson(Map<String, Object?> json) =>
+      _$HotKeyActionFromJson(json);
 }

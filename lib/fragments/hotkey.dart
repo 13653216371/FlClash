@@ -1,33 +1,65 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/card.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-const actions = [
-  "启动/暂停",
-  "显示/隐藏",
-  "切换模式",
-  "系统代理",
-  "虚拟网卡",
-];
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class HotKeyFragment extends StatelessWidget {
   const HotKeyFragment({super.key});
 
+  String getSubtitle(HotKeyAction hotKeyAction) {
+    final key = hotKeyAction.key;
+    if (key == null) {
+      return "暂无快捷键";
+    }
+    final modifierLabels =
+        hotKeyAction.modifiers.map((item) => item.physicalKeys.first.label);
+    var text = "";
+    if (modifierLabels.isNotEmpty) {
+      text += "${modifierLabels.join(" ")}+";
+    }
+    text += PhysicalKeyboardKey(key).label;
+    return text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: actions.length,
+      itemCount: HotAction.values.length,
       itemBuilder: (_, index) {
-        return ListItem(
-          title: Text(actions[index]),
-          onTap: () {
-            globalState.showCommonDialog(
-              child: HotKeyRecorder(
-                title: actions[index],
+        final hotAction = HotAction.values[index];
+        return Selector<Config, HotKeyAction>(
+          selector: (_, config) {
+            final index = config.hotKeyActions.indexWhere(
+              (item) => item.action == hotAction,
+            );
+            return index != -1
+                ? config.hotKeyActions[index]
+                : HotKeyAction(
+                    action: hotAction,
+                  );
+          },
+          builder: (_, value, __) {
+            return ListItem(
+              title: Text(Intl.message("action_${hotAction.name}")),
+              subtitle: Text(
+                getSubtitle(value),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colorScheme.primary
+                ),
               ),
+              onTap: () {
+                globalState.showCommonDialog(
+                  child: HotKeyRecorder(
+                    hotKeyAction: value,
+                  ),
+                );
+              },
             );
           },
         );
@@ -37,11 +69,11 @@ class HotKeyFragment extends StatelessWidget {
 }
 
 class HotKeyRecorder extends StatefulWidget {
-  final String title;
+  final HotKeyAction hotKeyAction;
 
   const HotKeyRecorder({
     super.key,
-    required this.title,
+    required this.hotKeyAction,
   });
 
   @override
@@ -49,23 +81,31 @@ class HotKeyRecorder extends StatefulWidget {
 }
 
 class _HotKeyRecorderState extends State<HotKeyRecorder> {
-  Set<PhysicalKeyboardKey> keys = {};
+  late ValueNotifier<HotKeyAction> hotKeyActionNotifier;
 
   @override
   void initState() {
     super.initState();
+    hotKeyActionNotifier = ValueNotifier<HotKeyAction>(
+      widget.hotKeyAction.copyWith(),
+    );
     HardwareKeyboard.instance.addHandler(_handleKeyEvent);
   }
 
   bool _handleKeyEvent(KeyEvent keyEvent) {
     if (keyEvent is KeyUpEvent) return false;
-    keys = HardwareKeyboard.instance.physicalKeysPressed;
-    List<KeyModifier>? modifiers = KeyModifier.values
-        .where((e) => e.physicalKeys.any(keys.contains))
-        .toList();
-    // setState(() {
-    //
-    // });
+    final keys = HardwareKeyboard.instance.physicalKeysPressed;
+
+    final key = keyEvent.physicalKey;
+
+    final modifiers = KeyboardModifier.values
+        .where((e) =>
+            e.physicalKeys.any(keys.contains) && !e.physicalKeys.contains(key))
+        .toSet();
+    hotKeyActionNotifier.value = hotKeyActionNotifier.value.copyWith(
+      modifiers: modifiers,
+      key: key.usbHidUsage,
+    );
     return true;
   }
 
@@ -75,26 +115,79 @@ class _HotKeyRecorderState extends State<HotKeyRecorder> {
     super.dispose();
   }
 
+  _handleRemove() {
+    Navigator.of(context).pop();
+    final config = globalState.appController.config;
+    config.updateOrAddHotKeyAction(
+      hotKeyActionNotifier.value.copyWith(
+        modifiers: {},
+        key: null,
+      ),
+    );
+  }
+
+  _handleConfirm() {
+    Navigator.of(context).pop();
+    final config = globalState.appController.config;
+    config.updateOrAddHotKeyAction(
+      hotKeyActionNotifier.value,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
-      content: SizedBox(
-        width: dialogCommonWidth,
-        child: Wrap(
-          spacing: 8,
-          children: [
-            for (final key in keys)
-              KeyboardKeyBox(
-                keyboardKey: key,
-              ),
-          ],
-        ),
+      title: Text(Intl.message("action_${widget.hotKeyAction.action.name}")),
+      content: ValueListenableBuilder(
+        valueListenable: hotKeyActionNotifier,
+        builder: (_, hotKeyAction, ___) {
+          final key = hotKeyAction.key;
+          final modifiers = hotKeyAction.modifiers;
+          return SizedBox(
+            width: dialogCommonWidth,
+            child: key != null
+                ? Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      for (final modifier in modifiers)
+                        KeyboardKeyBox(
+                          keyboardKey: modifier.physicalKeys.first,
+                        ),
+                      if (modifiers.isNotEmpty)
+                        Text(
+                          "+",
+                          style: context.textTheme.titleMedium,
+                        ),
+                      KeyboardKeyBox(
+                        keyboardKey: PhysicalKeyboardKey(key),
+                      ),
+                    ],
+                  )
+                : Text(
+                    "请按下按键",
+                    style: context.textTheme.titleMedium,
+                  ),
+          );
+        },
       ),
       actions: [
         TextButton(
-          onPressed: () {},
-          child: Text("确定"),
+          onPressed: () {
+            _handleRemove();
+          },
+          child: Text("移除"),
+        ),
+        const SizedBox(
+          width: 8,
+        ),
+        TextButton(
+          onPressed: () {
+            _handleConfirm();
+          },
+          child: Text(
+            appLocalizations.confirm,
+          ),
         ),
       ],
     );
@@ -112,12 +205,13 @@ class KeyboardKeyBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CommonCard(
+      type: CommonCardType.filled,
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(12),
         child: Text(
           keyboardKey.label,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
       ),

@@ -288,5 +288,10 @@
   "ipcidr": "Ipcidr",
   "domain": "Domain",
   "resetDns": "Reset Dns",
-  "reset": "Reset"
+  "reset": "Reset",
+  "action_view": "Show/Hide",
+  "action_start": "Start/Stop",
+  "action_mode": "Switch mode",
+  "action_proxy": "System proxy",
+  "action_tun": "TUN"
 }

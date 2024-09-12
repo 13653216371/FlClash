@@ -56,7 +56,11 @@ Config _$ConfigFromJson(Map<String, dynamic> json) => Config()
   ..scaleProps =
       ScaleProps.fromJson(json['scaleProps'] as Map<String, dynamic>?)
   ..showLabel = json['showLabel'] as bool? ?? false
-  ..overrideDns = json['overrideDns'] as bool? ?? false;
+  ..overrideDns = json['overrideDns'] as bool? ?? false
+  ..hotKeyActions = (json['hotKeyActions'] as List<dynamic>?)
+          ?.map((e) => HotKeyAction.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      [];
 
 Map<String, dynamic> _$ConfigToJson(Config instance) => <String, dynamic>{
       'profiles': instance.profiles,
@@ -90,6 +94,7 @@ Map<String, dynamic> _$ConfigToJson(Config instance) => <String, dynamic>{
       'scaleProps': instance.scaleProps,
       'showLabel': instance.showLabel,
       'overrideDns': instance.overrideDns,
+      'hotKeyActions': instance.hotKeyActions,
     };
 
 const _$ThemeModeEnumMap = {

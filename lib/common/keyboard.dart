@@ -103,31 +103,4 @@ extension KeyboardKeyExt on KeyboardKey {
 }
 
 
-enum KeyModifier {
-  alt([
-    PhysicalKeyboardKey.altLeft,
-    PhysicalKeyboardKey.altRight,
-  ]),
-  capsLock([
-    PhysicalKeyboardKey.capsLock,
-  ]),
-  control([
-    PhysicalKeyboardKey.controlLeft,
-    PhysicalKeyboardKey.controlRight,
-  ]),
-  fn([
-    PhysicalKeyboardKey.fn,
-  ]),
-  meta([
-    PhysicalKeyboardKey.metaLeft,
-    PhysicalKeyboardKey.metaRight,
-  ]),
-  shift([
-    PhysicalKeyboardKey.shiftLeft,
-    PhysicalKeyboardKey.shiftRight,
-  ]);
 
-  final List<PhysicalKeyboardKey> physicalKeys;
-
-  const KeyModifier(this.physicalKeys);
-}

@@ -34,6 +34,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "accountTip":
             MessageLookupByLibrary.simpleMessage("Account cannot be empty"),
         "action": MessageLookupByLibrary.simpleMessage("Action"),
+        "action_mode": MessageLookupByLibrary.simpleMessage("Switch mode"),
+        "action_proxy": MessageLookupByLibrary.simpleMessage("System proxy"),
+        "action_start": MessageLookupByLibrary.simpleMessage("Start/Stop"),
+        "action_tun": MessageLookupByLibrary.simpleMessage("TUN"),
+        "action_view": MessageLookupByLibrary.simpleMessage("Show/Hide"),
         "add": MessageLookupByLibrary.simpleMessage("Add"),
         "address": MessageLookupByLibrary.simpleMessage("Address"),
         "addressHelp":

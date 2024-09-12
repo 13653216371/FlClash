@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum GroupType { Selector, URLTest, Fallback, LoadBalance, Relay }
@@ -92,7 +93,6 @@ enum ProxiesLayout { loose, standard, tight }
 
 enum ProxyCardType { expand, shrink, min }
 
-
 enum DnsMode {
   normal,
   @JsonValue("fake-ip")
@@ -102,3 +102,39 @@ enum DnsMode {
   hosts
 }
 
+enum KeyboardModifier {
+  alt([
+    PhysicalKeyboardKey.altLeft,
+    PhysicalKeyboardKey.altRight,
+  ]),
+  capsLock([
+    PhysicalKeyboardKey.capsLock,
+  ]),
+  control([
+    PhysicalKeyboardKey.controlLeft,
+    PhysicalKeyboardKey.controlRight,
+  ]),
+  fn([
+    PhysicalKeyboardKey.fn,
+  ]),
+  meta([
+    PhysicalKeyboardKey.metaLeft,
+    PhysicalKeyboardKey.metaRight,
+  ]),
+  shift([
+    PhysicalKeyboardKey.shiftLeft,
+    PhysicalKeyboardKey.shiftRight,
+  ]);
+
+  final List<PhysicalKeyboardKey> physicalKeys;
+
+  const KeyboardModifier(this.physicalKeys);
+}
+
+enum HotAction {
+  start,
+  view,
+  mode,
+  proxy,
+  tun,
+}

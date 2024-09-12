@@ -2949,6 +2949,56 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Show/Hide`
+  String get action_view {
+    return Intl.message(
+      'Show/Hide',
+      name: 'action_view',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start/Stop`
+  String get action_start {
+    return Intl.message(
+      'Start/Stop',
+      name: 'action_start',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch mode`
+  String get action_mode {
+    return Intl.message(
+      'Switch mode',
+      name: 'action_mode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System proxy`
+  String get action_proxy {
+    return Intl.message(
+      'System proxy',
+      name: 'action_proxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN`
+  String get action_tun {
+    return Intl.message(
+      'TUN',
+      name: 'action_tun',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

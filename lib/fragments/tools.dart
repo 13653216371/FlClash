@@ -146,10 +146,10 @@ class _ToolboxFragmentState extends State<ToolsFragment> {
         if (system.isDesktop)
           ListItem.open(
             leading: const Icon(Icons.keyboard),
-            title: const Text("热键管理"),
+            title: const Text("快捷键管理"),
             subtitle: const Text("使用键盘快捷键控制应用程序"),
             delegate: OpenDelegate(
-              title: "热键管理",
+              title: "快捷键管理",
               widget: const HotKeyFragment(),
             ),
           ),
