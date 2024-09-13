@@ -9,6 +9,11 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+extension IntlExt on Intl {
+  static actionMessage(String messageText) =>
+      Intl.message("action_$messageText");
+}
+
 class HotKeyFragment extends StatelessWidget {
   const HotKeyFragment({super.key});
 
@@ -46,12 +51,11 @@ class HotKeyFragment extends StatelessWidget {
           },
           builder: (_, value, __) {
             return ListItem(
-              title: Text(Intl.message("action_${hotAction.name}")),
+              title: Text(IntlExt.actionMessage(hotAction.name)),
               subtitle: Text(
                 getSubtitle(value),
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.colorScheme.primary
-                ),
+                style: context.textTheme.bodyMedium
+                    ?.copyWith(color: context.colorScheme.primary),
               ),
               onTap: () {
                 globalState.showCommonDialog(
@@ -129,15 +133,40 @@ class _HotKeyRecorderState extends State<HotKeyRecorder> {
   _handleConfirm() {
     Navigator.of(context).pop();
     final config = globalState.appController.config;
+    final currentHotkeyAction = hotKeyActionNotifier.value;
+    if (currentHotkeyAction.key == null ||
+        currentHotkeyAction.modifiers.isEmpty) {
+      globalState.showMessage(
+        title: appLocalizations.tip,
+        message: TextSpan(text: "请输入正确的快捷键"),
+      );
+      return;
+    }
+    final hotKeyActions = config.hotKeyActions;
+    final index = hotKeyActions.indexWhere(
+      (item) =>
+          item.key == currentHotkeyAction.key &&
+          keyboardModifiersEquality.equals(
+            item.modifiers,
+            currentHotkeyAction.modifiers,
+          ),
+    );
+    if (index != -1) {
+      globalState.showMessage(
+        title: appLocalizations.tip,
+        message: TextSpan(text: "快捷键冲突"),
+      );
+      return;
+    }
     config.updateOrAddHotKeyAction(
-      hotKeyActionNotifier.value,
+      currentHotkeyAction,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(Intl.message("action_${widget.hotKeyAction.action.name}")),
+      title: Text(IntlExt.actionMessage((widget.hotKeyAction.action.name))),
       content: ValueListenableBuilder(
         valueListenable: hotKeyActionNotifier,
         builder: (_, hotKeyAction, ___) {
@@ -201,6 +230,7 @@ class KeyboardKeyBox extends StatelessWidget {
     super.key,
     required this.keyboardKey,
   });
+
 
   @override
   Widget build(BuildContext context) {

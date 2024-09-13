@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
@@ -95,8 +96,10 @@ class ApplicationState extends State<Application> {
     if (system.isDesktop) {
       return WindowManager(
         child: TrayManager(
-          child: ProxyManager(
-            child: app,
+          child: HotKeyManager(
+            child: ProxyManager(
+              child: app,
+            ),
           ),
         ),
       );

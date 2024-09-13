@@ -6,6 +6,7 @@ import 'dart:isolate';
 import 'package:archive/archive.dart';
 import 'package:fl_clash/common/archive.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -311,14 +312,6 @@ class AppController {
     autoCheckUpdate();
   }
 
-  updateTray() {
-    globalState.updateTray(
-      appState: appState,
-      config: config,
-      clashConfig: clashConfig,
-    );
-  }
-
   setDelay(Delay delay) {
     appState.setDelay(delay);
   }
@@ -494,6 +487,44 @@ class AppController {
       final zipEncoder = ZipEncoder();
       return zipEncoder.encode(archive) ?? [];
     });
+  }
+
+  updateTun() {
+    clashConfig.tun = clashConfig.tun.copyWith(
+      enable: !clashConfig.tun.enable,
+    );
+  }
+
+  updateSystemProxy() {
+    config.desktopProps = config.desktopProps.copyWith(
+      systemProxy: !config.desktopProps.systemProxy,
+    );
+  }
+
+  updateStart() {
+    updateStatus(!appState.isStart);
+  }
+
+  updateAutoLaunch() {
+    config.autoLaunch = !config.autoLaunch;
+  }
+
+  updateVisible() async {
+    final visible = await window?.isVisible();
+    if (visible != null && !visible) {
+      window?.show();
+    } else {
+      window?.hide();
+    }
+  }
+
+  updateMode() {
+    final index = Mode.values.indexWhere((item) => item == clashConfig.mode);
+    if (index == -1) {
+      return;
+    }
+    final nextIndex = index + 1 > Mode.values.length - 1 ? 0 : index + 1;
+    clashConfig.mode = Mode.values[nextIndex];
   }
 
   recoveryData(

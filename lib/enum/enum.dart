@@ -2,6 +2,7 @@
 
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 
 enum GroupType { Selector, URLTest, Fallback, LoadBalance, Relay }
 
@@ -129,6 +130,19 @@ enum KeyboardModifier {
   final List<PhysicalKeyboardKey> physicalKeys;
 
   const KeyboardModifier(this.physicalKeys);
+}
+
+extension KeyboardModifierExt on KeyboardModifier {
+  HotKeyModifier toHotKeyModifier() {
+    return switch (this) {
+      KeyboardModifier.alt => HotKeyModifier.alt,
+      KeyboardModifier.capsLock => HotKeyModifier.capsLock,
+      KeyboardModifier.control => HotKeyModifier.control,
+      KeyboardModifier.fn => HotKeyModifier.fn,
+      KeyboardModifier.meta => HotKeyModifier.meta,
+      KeyboardModifier.shift => HotKeyModifier.shift,
+    };
+  }
 }
 
 enum HotAction {

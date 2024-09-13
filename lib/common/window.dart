@@ -43,6 +43,10 @@ class Window {
     await windowManager.focus();
   }
 
+  Future<bool> isVisible() async {
+    return await windowManager.isVisible();
+  }
+
   close() async {
     exit(0);
   }
