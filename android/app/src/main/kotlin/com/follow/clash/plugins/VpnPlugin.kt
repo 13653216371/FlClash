@@ -118,8 +118,8 @@ class VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         GlobalState.runLock.withLock {
             if (GlobalState.runState.value == RunState.START) return
             GlobalState.runState.value = RunState.START
-            val fd = flClashService?.start(port, props)
-            flutterMethodChannel.invokeMethod("started", fd)
+            val tunProps = flClashService?.start(port, props)
+            flutterMethodChannel.invokeMethod("started", tunProps)
         }
     }
 
