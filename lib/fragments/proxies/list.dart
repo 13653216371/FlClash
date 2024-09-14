@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:fl_clash/common/common.dart';
@@ -219,11 +221,15 @@ class _ProxiesListFragmentState extends State<ProxiesListFragment> {
     final currentInitOffset = _headerOffset[index];
     final proxies = _lastGroupNameProxiesMap[groupName];
     _controller.animateTo(
-      currentInitOffset +
-          getScrollToSelectedOffset(
-            groupName: groupName,
-            proxies: proxies ?? [],
-          ),
+      min(
+        currentInitOffset +
+            8 +
+            getScrollToSelectedOffset(
+              groupName: groupName,
+              proxies: proxies ?? [],
+            ),
+        _controller.position.maxScrollExtent,
+      ),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeIn,
     );

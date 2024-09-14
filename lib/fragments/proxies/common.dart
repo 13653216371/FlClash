@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -40,17 +38,22 @@ double getItemHeight(ProxyCardType proxyCardType) {
   };
 }
 
+delaySingleTest(Proxy proxy) async {
+  final appController = globalState.appController;
+  final proxyName = appController.appState.getRealProxyName(proxy.name);
+  globalState.appController.setDelay(
+    Delay(
+      name: proxyName,
+      value: 0,
+    ),
+  );
+  globalState.appController.setDelay(await clashCore.getDelay(proxyName));
+}
+
 delayTest(List<Proxy> proxies) async {
   final appController = globalState.appController;
   final delayProxies = proxies.map<Future>((proxy) async {
-    final proxyName = appController.appState.getRealProxyName(proxy.name);
-    globalState.appController.setDelay(
-      Delay(
-        name: proxyName,
-        value: 0,
-      ),
-    );
-    globalState.appController.setDelay(await clashCore.getDelay(proxyName));
+    await delaySingleTest(proxy);
   }).toList();
 
   final batchesDelayProxies = delayProxies.batch(100);

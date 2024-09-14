@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -266,11 +268,14 @@ class ProxyGroupViewState extends State<ProxyGroupView> {
       return;
     }
     _controller.animateTo(
-      16 +
-          getScrollToSelectedOffset(
-            groupName: groupName,
-            proxies: _lastProxies,
-          ),
+      min(
+        16 +
+            getScrollToSelectedOffset(
+              groupName: groupName,
+              proxies: _lastProxies,
+            ),
+        _controller.position.maxScrollExtent,
+      ),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeIn,
     );
