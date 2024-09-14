@@ -111,8 +111,8 @@ class FlClashVpnService : VpnService(), BaseServiceInterface {
             TunProps(
                 fd = establish()?.detachFd()
                     ?: throw NullPointerException("Establish VPN rejected by system"),
-                gateway = TUN_GATEWAY,
-                gateway6 = TUN_GATEWAY6,
+                gateway = "$TUN_GATEWAY/$TUN_SUBNET_PREFIX",
+                gateway6 = "$TUN_GATEWAY6/$TUN_SUBNET_PREFIX6",
                 portal = TUN_PORTAL,
                 portal6 = TUN_PORTAL6,
                 dns = TUN_DNS,

@@ -4,6 +4,7 @@ package tun
 
 import "C"
 import (
+	"encoding/json"
 	"github.com/metacubex/mihomo/constant"
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/sing_tun"
@@ -26,20 +27,20 @@ type Props struct {
 
 func Start(tunProps Props) (io.Closer, error) {
 	var prefix4 []netip.Prefix
-	prefix, err := netip.ParsePrefix(tunProps.Gateway)
+	tempPrefix4, err := netip.ParsePrefix(tunProps.Gateway)
 	if err != nil {
 		log.Errorln("startTUN error:", err)
 		return nil, err
 	}
-	prefix4 = append(prefix4, prefix)
+	prefix4 = append(prefix4, tempPrefix4)
 
 	var prefix6 []netip.Prefix
-	prefix, err = netip.ParsePrefix(tunProps.Gateway6)
+	tempPrefix6, err := netip.ParsePrefix(tunProps.Gateway6)
 	if err != nil {
 		log.Errorln("startTUN error:", err)
 		return nil, err
 	}
-	prefix6 = append(prefix6, prefix)
+	prefix6 = append(prefix6, tempPrefix6)
 
 	var dnsHijack []string
 	dnsHijack = append(dnsHijack, net.JoinHostPort(tunProps.Dns, "53"))
@@ -48,7 +49,7 @@ func Start(tunProps Props) (io.Closer, error) {
 	options := LC.Tun{
 		Enable:              true,
 		Device:              sing_tun.InterfaceName,
-		Stack:               constant.TunMixed,
+		Stack:               constant.TunSystem,
 		DNSHijack:           dnsHijack,
 		AutoRoute:           false,
 		AutoDetectInterface: false,
@@ -58,6 +59,15 @@ func Start(tunProps Props) (io.Closer, error) {
 		FileDescriptor:      tunProps.Fd,
 	}
 
+	tunOptions, _ := json.Marshal(options)
+	log.Infoln(string(tunOptions))
+
 	listener, err := sing_tun.New(options, tunnel.Tunnel)
-	return listener, err
+
+	if err != nil {
+		log.Errorln("startTUN error:", err)
+		return nil, err
+	}
+
+	return listener, nil
 }

@@ -19,8 +19,9 @@ class Vpn {
     methodChannel.setMethodCallHandler((call) async {
       switch (call.method) {
         case "started":
-          final tunProps =
-              call.arguments != null ? TunProps.fromJson(call.arguments) : null;
+          final tunProps = call.arguments != null
+              ? TunProps.fromJson(json.decode((call.arguments)))
+              : null;
           onStarted(tunProps);
           break;
         default:

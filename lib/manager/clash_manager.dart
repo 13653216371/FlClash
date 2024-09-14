@@ -141,7 +141,7 @@ class _ClashContainerState extends State<ClashManager>
     if (log.logLevel == LogLevel.error) {
       globalState.appController.showSnackBar(log.payload ?? '');
     }
-    // debugPrint("$log");
+    debugPrint("$log");
     super.onLog(log);
   }
 

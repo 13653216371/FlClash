@@ -324,9 +324,7 @@ class ClashCore {
 
   startTun(TunProps? tunProps, int port) {
     if (!Platform.isAndroid) return;
-    final tunPropsChar = (tunProps != null ? json.encode(tunProps) : "")
-        .toNativeUtf8()
-        .cast<Char>();
+    final tunPropsChar = json.encode(tunProps).toNativeUtf8().cast<Char>();
     clashFFI.startTUN(tunPropsChar, port);
     malloc.free(tunPropsChar);
   }

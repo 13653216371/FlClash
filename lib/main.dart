@@ -18,6 +18,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   clashCore.initMessage();
   globalState.packageInfo = await PackageInfo.fromPlatform();
+  print(globalState.packageInfo.version);
   final config = await preferences.getConfig() ?? Config();
   globalState.autoRun = config.autoRun;
   final clashConfig = await preferences.getClashConfig() ?? ClashConfig();

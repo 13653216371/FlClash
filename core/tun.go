@@ -61,17 +61,19 @@ func startTUN(s *C.char, port C.longlong) {
 	go func() {
 		tunLock.Lock()
 		defer tunLock.Unlock()
+
 		var tunProps = &t.Props{}
 		err := json.Unmarshal([]byte(paramsString), tunProps)
+		if err != nil {
+			log.Errorln("startTUN error: %v", err)
+			return
+		}
 
-		tempCloser, err := t.Start(*tunProps)
+		closer, err = t.Start(*tunProps)
 
 		if err != nil {
 			log.Errorln("startTUN error: %v", err)
-			_ = tempCloser.Close()
 		}
-
-		closer = tempCloser
 
 		now := time.Now()
 
