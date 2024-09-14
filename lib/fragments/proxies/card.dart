@@ -26,7 +26,7 @@ class ProxyCard extends StatelessWidget {
   Measure get measure => globalState.measure;
 
   _handleTestCurrentDelay() {
-    delaySingleTest(proxy);
+    proxyDelayTest(proxy);
   }
 
   Widget _buildDelayText() {

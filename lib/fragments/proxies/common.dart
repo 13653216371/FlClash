@@ -38,7 +38,7 @@ double getItemHeight(ProxyCardType proxyCardType) {
   };
 }
 
-delaySingleTest(Proxy proxy) async {
+proxyDelayTest(Proxy proxy) async {
   final appController = globalState.appController;
   final proxyName = appController.appState.getRealProxyName(proxy.name);
   globalState.appController.setDelay(
@@ -52,8 +52,19 @@ delaySingleTest(Proxy proxy) async {
 
 delayTest(List<Proxy> proxies) async {
   final appController = globalState.appController;
-  final delayProxies = proxies.map<Future>((proxy) async {
-    await delaySingleTest(proxy);
+  final proxyNames = proxies
+      .map((proxy) => appController.appState.getRealProxyName(proxy.name))
+      .toSet()
+      .toList();
+
+  final delayProxies = proxyNames.map<Future>((proxyName) async {
+    globalState.appController.setDelay(
+      Delay(
+        name: proxyName,
+        value: 0,
+      ),
+    );
+    globalState.appController.setDelay(await clashCore.getDelay(proxyName));
   }).toList();
 
   final batchesDelayProxies = delayProxies.batch(100);
@@ -79,5 +90,5 @@ double getScrollToSelectedOffset({
   );
   final selectedIndex = findSelectedIndex != -1 ? findSelectedIndex : 0;
   final rows = (selectedIndex / columns).floor();
-  return rows * getItemHeight(proxyCardType) + (rows - 1)  * 8;
+  return rows * getItemHeight(proxyCardType) + (rows - 1) * 8;
 }
