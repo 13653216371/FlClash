@@ -41,6 +41,7 @@ class Window {
   show() async {
     await windowManager.show();
     await windowManager.focus();
+    await windowManager.setSkipTaskbar(false);
   }
 
   Future<bool> isVisible() async {
@@ -53,6 +54,7 @@ class Window {
 
   hide() async {
     await windowManager.hide();
+    await windowManager.setSkipTaskbar(true);
   }
 }
 
