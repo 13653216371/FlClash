@@ -5567,19 +5567,20 @@ class ClashFFI {
       _setStatePtr.asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
   void startTUN(
-    int fd,
+    ffi.Pointer<ffi.Char> s,
     int port,
   ) {
     return _startTUN(
-      fd,
+      s,
       port,
     );
   }
 
-  late final _startTUNPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int, ffi.LongLong)>>(
-          'startTUN');
-  late final _startTUN = _startTUNPtr.asFunction<void Function(int, int)>();
+  late final _startTUNPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Pointer<ffi.Char>, ffi.LongLong)>>('startTUN');
+  late final _startTUN =
+      _startTUNPtr.asFunction<void Function(ffi.Pointer<ffi.Char>, int)>();
 
   ffi.Pointer<ffi.Char> getRunTime() {
     return _getRunTime();

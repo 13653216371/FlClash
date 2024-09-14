@@ -11,6 +11,7 @@ import com.follow.clash.BaseServiceInterface
 import com.follow.clash.GlobalState
 import com.follow.clash.RunState
 import com.follow.clash.models.Props
+import com.follow.clash.models.TunProps
 import com.follow.clash.services.FlClashService
 import com.follow.clash.services.FlClashVpnService
 import com.google.gson.Gson
@@ -119,7 +120,7 @@ class VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             if (GlobalState.runState.value == RunState.START) return
             GlobalState.runState.value = RunState.START
             val tunProps = flClashService?.start(port, props)
-            flutterMethodChannel.invokeMethod("started", tunProps)
+            flutterMethodChannel.invokeMethod("started", Gson().toJson(tunProps, TunProps::class.java))
         }
     }
 

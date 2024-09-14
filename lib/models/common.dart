@@ -435,3 +435,4 @@ class HotKeyAction with _$HotKeyAction {
 
 const keyboardModifiersEquality = SetEquality<KeyboardModifier>();
 const hotKeyActionsEquality = ListEquality<HotKeyAction>();
+

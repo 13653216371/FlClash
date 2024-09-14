@@ -19,8 +19,9 @@ class Vpn {
     methodChannel.setMethodCallHandler((call) async {
       switch (call.method) {
         case "started":
-          final fd = call.arguments;
-          onStarted(fd);
+          final tunProps =
+              call.arguments != null ? TunProps.fromJson(call.arguments) : null;
+          onStarted(tunProps);
           break;
         default:
           throw MissingPluginException();
@@ -59,7 +60,7 @@ class Vpn {
     });
   }
 
-  onStarted(int? fd) {
+  onStarted(TunProps? tunProps) {
     if (receiver != null) {
       receiver!.close();
       receiver == null;
@@ -68,7 +69,7 @@ class Vpn {
     receiver!.listen((message) {
       _handleServiceMessage(message);
     });
-    clashCore.startTun(fd ?? 0, receiver!.sendPort.nativePort);
+    clashCore.startTun(tunProps, receiver!.sendPort.nativePort);
   }
 
   setServiceMessageHandler(ServiceMessageListener serviceMessageListener) {
