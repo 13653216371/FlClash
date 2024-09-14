@@ -60,6 +60,8 @@ class FlClashVpnService : VpnService(), BaseServiceInterface {
         private const val TUN_PORTAL6 = "fdfe:dcba:9876::2"
         private const val TUN_DNS = TUN_PORTAL
         private const val TUN_DNS6 = TUN_PORTAL6
+        private const val NET_ANY = "0.0.0.0"
+        private const val NET_ANY6 = "::"
     }
 
     override fun onCreate() {
@@ -71,11 +73,11 @@ class FlClashVpnService : VpnService(), BaseServiceInterface {
         return with(Builder()) {
             addAddress(TUN_GATEWAY, TUN_SUBNET_PREFIX)
             addAddress(TUN_GATEWAY6, TUN_SUBNET_PREFIX6)
-            addRoute(TUN_DNS, 32)
-            addRoute(TUN_DNS6, 128)
-            setMtu(TUN_MTU)
+            addRoute(NET_ANY, 0)
+            addRoute(NET_ANY6, 0)
             addDnsServer(TUN_DNS)
             addDnsServer(TUN_DNS6)
+            setMtu(TUN_MTU)
             props?.accessControl?.let { accessControl ->
                 when (accessControl.mode) {
                     AccessControlMode.acceptSelected -> {

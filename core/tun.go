@@ -8,7 +8,7 @@ import (
 	t "core/tun"
 	"encoding/json"
 	"errors"
-	"io"
+	"github.com/metacubex/mihomo/listener/sing_tun"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -36,9 +36,9 @@ func (cm *FdMap) Load(key int64) bool {
 }
 
 var (
-	closer    io.Closer
-	fdMap     FdMap
-	fdCounter int64 = 0
+	tunListener *sing_tun.Listener
+	fdMap       FdMap
+	fdCounter   int64 = 0
 )
 
 //export startTUN
@@ -69,10 +69,14 @@ func startTUN(s *C.char, port C.longlong) {
 			return
 		}
 
-		closer, err = t.Start(*tunProps)
+		tunListener, err = t.Start(*tunProps)
 
 		if err != nil {
-			log.Errorln("startTUN error: %v", err)
+			return
+		}
+
+		if tunListener != nil {
+			log.Infoln("TUN address: %v", tunListener.Address())
 		}
 
 		now := time.Now()
@@ -103,8 +107,8 @@ func stopTun() {
 
 		runTime = nil
 
-		if closer != nil {
-			_ = closer.Close()
+		if tunListener != nil {
+			_ = tunListener.Close()
 		}
 	}()
 }
@@ -137,10 +141,6 @@ func initSocketHook() {
 			return errBlocked
 		}
 		return conn.Control(func(fd uintptr) {
-			if closer == nil {
-				return
-			}
-
 			fdInt := int64(fd)
 			timeout := time.After(100 * time.Millisecond)
 			id := atomic.AddInt64(&fdCounter, 1)

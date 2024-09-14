@@ -4,13 +4,11 @@ package tun
 
 import "C"
 import (
-	"encoding/json"
 	"github.com/metacubex/mihomo/constant"
 	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
-	"io"
 	"net"
 	"net/netip"
 )
@@ -25,7 +23,7 @@ type Props struct {
 	Dns6     string `json:"dns6"`
 }
 
-func Start(tunProps Props) (io.Closer, error) {
+func Start(tunProps Props) (*sing_tun.Listener, error) {
 	var prefix4 []netip.Prefix
 	tempPrefix4, err := netip.ParsePrefix(tunProps.Gateway)
 	if err != nil {
@@ -59,9 +57,12 @@ func Start(tunProps Props) (io.Closer, error) {
 		FileDescriptor:      tunProps.Fd,
 	}
 
-	tunOptions, _ := json.Marshal(options)
+	listener, err := sing_tun.New(options, tunnel.Tunnel)
 
-	log.Infoln("startTUN tunOptions: %s", tunOptions)
+	if err != nil {
+		log.Errorln("startTUN error:", err)
+		return nil, err
+	}
 
-	return sing_tun.New(options, tunnel.Tunnel)
+	return listener, nil
 }

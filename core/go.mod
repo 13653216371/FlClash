@@ -2,7 +2,6 @@ module core
 
 go 1.21.0
 
-
 replace github.com/metacubex/mihomo => ./Clash.Meta
 
 require github.com/metacubex/mihomo v1.17.1
@@ -52,7 +51,7 @@ require (
 	github.com/metacubex/chacha v0.1.0 // indirect
 	github.com/metacubex/gopacket v1.1.20-0.20230608035415-7e2f98a3e759 // indirect
 	github.com/metacubex/gvisor v0.0.0-20240320004321-933faba989ec // indirect
-	github.com/metacubex/quic-go v0.46.1-0.20240807232329-1c6cb2d67f58 // indirect
+	github.com/metacubex/quic-go v0.47.1-0.20240909010619-6b38f24bfcc4 // indirect
 	github.com/metacubex/randv2 v0.2.0 // indirect
 	github.com/metacubex/sing-quic v0.0.0-20240827003841-cd97758ed8b4 // indirect
 	github.com/metacubex/sing-shadowsocks v0.2.8 // indirect
@@ -108,6 +107,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect`
+	gopkg.in/yaml.v3 v3.0.1 // indirect; indirect`
 	lukechampine.com/blake3 v1.3.0 // indirect
 )
