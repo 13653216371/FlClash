@@ -105,13 +105,13 @@ class Other {
     required Brightness brightness,
   }) {
     final suffix = Platform.isWindows ? "ico" : "png";
-    if (isStart) {
-      return "assets/images/icon.$suffix";
+    if (!isStart && Platform.isWindows) {
+      return switch (brightness) {
+        Brightness.dark => "assets/images/icon_white.$suffix",
+        Brightness.light => "assets/images/icon_black.$suffix",
+      };
     }
-    return switch (brightness) {
-      Brightness.dark => "assets/images/icon_white.$suffix",
-      Brightness.light => "assets/images/icon_black.$suffix",
-    };
+    return "assets/images/icon.$suffix";
   }
 
   int compareVersions(String version1, String version2) {
