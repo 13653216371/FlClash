@@ -5,6 +5,7 @@ import 'dart:isolate';
 
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -94,4 +95,4 @@ class App {
   }
 }
 
-final app = Platform.isAndroid ? App() : null;
+final app = Platform.isAndroid && globalState.isVpnService ? App() : null;

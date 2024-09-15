@@ -9,8 +9,13 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.ComponentInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.LinkProperties
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -33,10 +38,16 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.util.zip.ZipFile
 
@@ -52,11 +63,14 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
     private lateinit var scope: CoroutineScope
 
-    private var connectivity: ConnectivityManager? = null
+    private val connectivity by lazy {
+        context.getSystemService<ConnectivityManager>()
+    }
 
     private var vpnCallBack: (() -> Unit)? = null
 
     private val iconMap = mutableMapOf<String, String?>()
+
     private val packages = mutableListOf<Package>()
 
     private val skipPrefixList = listOf(
@@ -113,7 +127,6 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     private val chinaAppRegex by lazy {
         ("(" + chinaAppPrefixList.joinToString("|").replace(".", "\\.") + ").*").toRegex()
     }
-
 
     val VPN_PERMISSION_REQUEST_CODE = 1001
 
@@ -209,9 +222,6 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                             result.success(null)
                             return@withContext
-                        }
-                        if (connectivity == null) {
-                            connectivity = context.getSystemService<ConnectivityManager>()
                         }
                         val src = InetSocketAddress(metadata.sourceIP, metadata.sourcePort)
                         val dst = InetSocketAddress(
@@ -379,7 +389,6 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         }
     }
 
-
     private fun isChinaPackage(packageName: String): Boolean {
         val packageManager = context.packageManager ?: return false
         skipPrefixList.forEach {
@@ -451,6 +460,83 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         channel.invokeMethod("gc", null)
     }
 
+
+    private data class Action(val type: Type, val network: Network) {
+        enum class Type { Available, Lost, Changed }
+    }
+
+    private val actions = Channel<Action>(Channel.UNLIMITED)
+
+    private val callback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            actions.trySendBlocking(Action(Action.Type.Available, network))
+        }
+
+        override fun onLost(network: Network) {
+            actions.trySendBlocking(Action(Action.Type.Lost, network))
+        }
+
+        override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+            actions.trySendBlocking(Action(Action.Type.Changed, network))
+        }
+    }
+
+    private val request = NetworkRequest.Builder().apply {
+        addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+        addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+    }.build()
+
+    suspend fun registerNetworkCallback() {
+        try {
+            connectivity?.registerNetworkCallback(request, callback)
+        } catch (e: Exception) {
+            return
+        }
+
+        try {
+            val networks = mutableSetOf<Network>()
+
+            while (true) {
+                val action = actions.receive()
+
+                val resolveDefault = when (action.type) {
+                    Action.Type.Available -> {
+                        networks.add(action.network)
+                        true
+                    }
+
+                    Action.Type.Lost -> {
+                        networks.remove(action.network)
+                        true
+                    }
+
+                    Action.Type.Changed -> {
+                        false
+                    }
+                }
+
+                val dns = networks.mapNotNull {
+                    connectivity?.resolvePrimaryDns(it)
+                }
+
+                if (resolveDefault) {
+                    val network = networks.maxByOrNull { net ->
+                        connectivity?.getNetworkCapabilities(net)?.let { cap ->
+                            TRANSPORT_PRIORITY.indexOfFirst { cap.hasTransport(it) }
+                        } ?: -1
+                    }
+                }
+            }
+        } finally {
+            withContext(NonCancellable) {
+                runCatching {
+                    connectivity?.unregisterNetworkCallback(callback)
+                }
+            }
+        }
+    }
+
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity;
         binding.addActivityResultListener(::onActivityResult)
@@ -490,4 +576,64 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         }
         return true
     }
+
+
+    companion object {
+        private val TRANSPORT_PRIORITY = sequence {
+            yield(NetworkCapabilities.TRANSPORT_CELLULAR)
+
+            if (Build.VERSION.SDK_INT >= 27) {
+                yield(NetworkCapabilities.TRANSPORT_LOWPAN)
+            }
+
+            yield(NetworkCapabilities.TRANSPORT_BLUETOOTH)
+
+            if (Build.VERSION.SDK_INT >= 26) {
+                yield(NetworkCapabilities.TRANSPORT_WIFI_AWARE)
+            }
+
+            yield(NetworkCapabilities.TRANSPORT_WIFI)
+
+            if (Build.VERSION.SDK_INT >= 31) {
+                yield(NetworkCapabilities.TRANSPORT_USB)
+            }
+
+            yield(NetworkCapabilities.TRANSPORT_ETHERNET)
+        }.toList()
+    }
+}
+
+fun ConnectivityManager.resolvePrimaryDns(network: Network?): String? {
+    val properties = getLinkProperties(network) ?: return null
+
+    return properties.dnsServers.firstOrNull()?.asSocketAddressText(53)
+}
+
+fun InetAddress.asSocketAddressText(port: Int): String {
+    return when (this) {
+        is Inet6Address ->
+            "[${numericToTextFormat(this.address)}]:$port"
+        is Inet4Address ->
+            "${this.hostAddress}:$port"
+        else -> throw IllegalArgumentException("Unsupported Inet type ${this.javaClass}")
+    }
+}
+
+private const val INT16SZ = 2
+private const val INADDRSZ = 16
+
+private fun numericToTextFormat(src: ByteArray): String {
+    val sb = StringBuilder(39)
+    for (i in 0 until INADDRSZ / INT16SZ) {
+        sb.append(
+            Integer.toHexString(
+                src[i shl 1].toInt() shl 8 and 0xff00
+                        or (src[(i shl 1) + 1].toInt() and 0xff)
+            )
+        )
+        if (i < INADDRSZ / INT16SZ - 1) {
+            sb.append(":")
+        }
+    }
+    return sb.toString()
 }

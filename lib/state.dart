@@ -76,14 +76,16 @@ class GlobalState {
     required ClashConfig clashConfig,
   }) async {
     clashCore.start();
-    if (globalState.isVpnService) {
+    if (vpn != null) {
       await vpn?.startVpn(clashConfig.mixedPort);
       startListenUpdate();
       return;
     }
-    startTime ??= DateTime.now();
-    await service?.init();
-    startListenUpdate();
+    if(service != null){
+      startTime ??= DateTime.now();
+      await service?.init();
+      startListenUpdate();
+    }
   }
 
   updateStartTime() {
