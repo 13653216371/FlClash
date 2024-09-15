@@ -28,7 +28,7 @@ class Window {
     } else {
       await windowManager.setAlignment(Alignment.center);
     }
-    if(!Platform.isMacOS && version > 10){
+    if(!Platform.isMacOS || version > 10){
       await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     }
     await windowManager.waitUntilReadyToShow(windowOptions, () async {

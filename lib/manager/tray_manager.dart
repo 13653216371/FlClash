@@ -42,9 +42,11 @@ class _TrayContainerState extends State<TrayManager> with TrayListener {
             WidgetsBinding.instance.platformDispatcher.platformBrightness,
       ),
     );
-    await trayManager.setToolTip(
-      appName,
-    );
+    if(!Platform.isLinux){
+      await trayManager.setToolTip(
+        appName,
+      );
+    }
   }
 
   _updateTray(TrayState trayState) async {
