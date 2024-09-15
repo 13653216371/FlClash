@@ -7,17 +7,10 @@ import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/plugins/vpn.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:tray_manager/tray_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'controller.dart';
-
-import 'enum/enum.dart';
-import 'l10n/l10n.dart';
 import 'models/models.dart';
 import 'common/common.dart';
 
