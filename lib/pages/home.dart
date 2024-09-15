@@ -1,5 +1,5 @@
+import 'package:collection/collection.dart';
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/widgets/keep_scope.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +109,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  _updatePageIndex(List<NavigationItem> navigationItems) {
+  _updatePageController(List<NavigationItem> navigationItems) {
     final currentLabel = globalState.appController.appState.currentLabel;
     final index = navigationItems.lastIndexWhere(
       (element) => element.label == currentLabel,
@@ -125,6 +125,31 @@ class HomePage extends StatelessWidget {
         keepPage: true,
       );
     }
+  }
+
+  Widget _buildPageView() {
+    return Selector<AppState, List<NavigationItem>>(
+      selector: (_, appState) => appState.currentNavigationItems,
+      shouldRebuild: (prev, next) {
+        return prev.length != next.length;
+      },
+      builder: (_, navigationItems, __) {
+        _updatePageController(navigationItems);
+        return PageView.builder(
+          controller: globalState.pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: navigationItems.length,
+          itemBuilder: (_, index) {
+            final navigationItem = navigationItems[index];
+            return KeepScope(
+              keep: navigationItem.keep,
+              key: Key(navigationItem.label),
+              child: navigationItem.fragment,
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -145,6 +170,9 @@ class HomePage extends StatelessWidget {
                 viewMode: other.getViewMode(maxWidth),
                 locale: config.locale,
               );
+            },
+            shouldRebuild: (prev, next) {
+              return prev != next;
             },
             builder: (_, state, child) {
               final viewMode = state.viewMode;
@@ -174,33 +202,7 @@ class HomePage extends StatelessWidget {
                 bottomNavigationBar: bottomNavigationBar,
               );
             },
-            child: Selector2<AppState, Config, HomeViewState>(
-              selector: (_, appState, config) => HomeViewState(
-                navigationItems: appState.currentNavigationItems,
-              ),
-              shouldRebuild: (prev, next) {
-                if(prev != next){
-                  _updatePageIndex(next.navigationItems);
-                }
-                return prev != next;
-              },
-              builder: (_, state, __) {
-                final navigationItems = state.navigationItems;
-                return PageView.builder(
-                  controller: globalState.pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: navigationItems.length,
-                  itemBuilder: (_, index) {
-                    final navigationItem = navigationItems[index];
-                    return KeepScope(
-                      keep: navigationItem.keep,
-                      key: Key(navigationItem.label),
-                      child: navigationItem.fragment,
-                    );
-                  },
-                );
-              },
-            ),
+            child: _buildPageView(),
           );
         },
       ),

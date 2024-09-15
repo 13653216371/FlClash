@@ -89,13 +89,6 @@ class HomeState with _$HomeState {
   }) = _HomeState;
 }
 
-@freezed
-class HomeViewState with _$HomeViewState {
-  const factory HomeViewState({
-    required List<NavigationItem> navigationItems,
-  }) = _HomeViewState;
-}
-
 
 @freezed
 class ProxiesCardSelectorState with _$ProxiesCardSelectorState {
