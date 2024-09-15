@@ -32,11 +32,13 @@ class AppState with ChangeNotifier {
   List<ExternalProvider> _providers;
   List<Package> _packages;
   Brightness? _brightness;
+  int _version;
 
   AppState({
     required Mode mode,
     required bool isCompatible,
     required SelectedMap selectedMap,
+    required int version,
   })  : _navigationItems = [],
         _isInit = false,
         _currentLabel = "dashboard",
@@ -55,7 +57,8 @@ class AppState with ChangeNotifier {
         _providers = [],
         _packages = [],
         _isCompatible = isCompatible,
-        _systemColorSchemes = const SystemColorSchemes();
+        _systemColorSchemes = const SystemColorSchemes(),
+        _version = version;
 
   String get currentLabel => _currentLabel;
 
@@ -367,6 +370,15 @@ class AppState with ChangeNotifier {
   set brightness(Brightness? value) {
     if (_brightness != value) {
       _brightness = value;
+      notifyListeners();
+    }
+  }
+
+  int get version => _version;
+
+  set version(int value) {
+    if (_version != value) {
+      _version = value;
       notifyListeners();
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
@@ -97,21 +99,30 @@ class WindowHeaderContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
+    return Selector<AppState, int>(
+      selector: (_, appState) => appState.version,
+      builder: (_, version, child) {
+        if (version <= 10 && Platform.isMacOS) {
+          return child!;
+        }
+        return Stack(
           children: [
-            SizedBox(
-              height: kHeaderHeight,
+            Column(
+              children: [
+                SizedBox(
+                  height: kHeaderHeight,
+                ),
+                Expanded(
+                  flex: 1,
+                  child: child!,
+                ),
+              ],
             ),
-            Expanded(
-              flex: 1,
-              child: child,
-            ),
+            const WindowHeader(),
           ],
-        ),
-        const WindowHeader(),
-      ],
+        );
+      },
+      child: child,
     );
   }
 }
@@ -238,14 +249,20 @@ class _WindowHeaderState extends State<WindowHeader> {
               ),
             ),
           ),
-          const Positioned(
-            left: 0,
-            child: AppIcon(),
-          ),
-          Positioned(
-            right: 0,
-            child: _buildActions(),
-          ),
+          if (Platform.isMacOS)
+            const Text(
+              appName,
+            )
+          else ...[
+            const Positioned(
+              left: 0,
+              child: AppIcon(),
+            ),
+            Positioned(
+              right: 0,
+              child: _buildActions(),
+            ),
+          ]
         ],
       ),
     );

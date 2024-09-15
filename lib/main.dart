@@ -18,13 +18,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   clashCore.initMessage();
   globalState.packageInfo = await PackageInfo.fromPlatform();
+  final version = await system.version;
   final config = await preferences.getConfig() ?? Config();
   globalState.autoRun = config.autoRun;
   final clashConfig = await preferences.getClashConfig() ?? ClashConfig();
   await android?.init();
-  await window?.init(config.windowProps);
+  await window?.init(config.windowProps, version);
   final appState = AppState(
     mode: clashConfig.mode,
+    version: version,
     isCompatible: config.isCompatible,
     selectedMap: config.currentSelectedMap,
   );
@@ -51,12 +53,14 @@ Future<void> vpnService() async {
   WidgetsFlutterBinding.ensureInitialized();
   globalState.isVpnService = true;
   globalState.packageInfo = await PackageInfo.fromPlatform();
+  final version = await system.version;
   final config = await preferences.getConfig() ?? Config();
   final clashConfig = await preferences.getClashConfig() ?? ClashConfig();
   final appState = AppState(
     mode: clashConfig.mode,
     isCompatible: config.isCompatible,
     selectedMap: config.currentSelectedMap,
+    version: version,
   );
   await globalState.init(
     appState: appState,
